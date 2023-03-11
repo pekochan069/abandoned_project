@@ -1,0 +1,87 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider     = "mysql"
+    url          = env("DATABASE_URL")
+    relationMode = "prisma"
+}
+
+enum Language {
+    JA
+    KO
+    EN
+}
+
+model Vtuber {
+    id        String         @id @default(uuid())
+    channelId String
+    agency    String?
+    names     VtuberName[]
+    originals OriginalSong[]
+    covers    Cover[]
+}
+
+model VtuberName {
+    id          String   @id @default(uuid())
+    vtuber      Vtuber   @relation(fields: [vtuberId], references: [id])
+    vtuberId    String
+    name        String
+    lang        Language
+    langDefault Boolean  @default(false)
+
+    @@index([vtuberId])
+}
+
+model Singer {
+    id        String         @id @default(uuid())
+    names     SingerName[]
+    originals OriginalSong[]
+}
+
+model SingerName {
+    id          String   @id @default(uuid())
+    singer      Singer   @relation(fields: [singerId], references: [id])
+    singerId    String
+    name        String
+    lang        Language
+    langDefault Boolean  @default(false)
+
+    @@index([singerId])
+}
+
+model Cover {
+    id                  String       @id @default(uuid())
+    vidoeId             String?
+    youtubeMusicVideoId String?
+    vtubers             Vtuber[]
+    song                OriginalSong @relation(fields: [songId], references: [id])
+    songId              String
+    uploadDate          DateTime
+
+    @@index([songId])
+}
+
+model OriginalSong {
+    id                  String     @id @default(uuid())
+    videoId             String?
+    names               SongName[]
+    youtubeMusicVideoId String?
+    vtuberOriginal      Boolean    @default(false)
+    vtubers             Vtuber[]
+    Singers             Singer[]
+    Covers              Cover[]
+    UploadDate          DateTime?
+}
+
+model SongName {
+    id          String       @id @default(uuid())
+    song        OriginalSong @relation(fields: [songId], references: [id])
+    songId      String
+    name        String
+    lang        Language
+    langDefault Boolean      @default(false)
+
+    @@index([songId])
+}
